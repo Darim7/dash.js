@@ -32,7 +32,6 @@
     "lint": "eslint \"src/**/*.js\" \"test/unit/mocks/*.js\" \"test/unit/test/**/*.js\"",
     "prebuild": "rimraf dist && tsc && npm run test && npm run lint",
     "prepack": "npm run build",
-    "prepare": "node githook.cjs",
     "start": "webpack serve --config build/webpack/modern/webpack.modern.dev.cjs",
     "test": "karma start test/unit/config/karma.unit.conf.cjs",
     "test-functional": "karma start test/functional/config/karma.functional.conf.cjs --configfile=local --streamsfile=smoke",
