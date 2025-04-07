@@ -2785,15 +2785,17 @@ app.controller("DashController", [
         const socket = new WebSocket("ws://localhost:6789");
 
         $scope.plotPoint = function (name, type, value, time) {
-            // Send Data to Server
-            const dataPoint = JSON.stringify({
-                testName: document.title,
-                metricsName: name,
-                metricsTime: time,
-                metricsValue: value,
-            });
+            if (type === "video") {
+                // Send Data to Server
+                const dataPoint = JSON.stringify({
+                    testName: document.title,
+                    metricsName: name,
+                    metricsTime: time,
+                    metricsValue: value,
+                });
 
-            socket.send(dataPoint);
+                socket.send(dataPoint);
+            }
 
             if ($scope.chartEnabled) {
                 var specificChart = $scope.chartState[type];
