@@ -562,7 +562,10 @@ app.controller("DashController", [
                     rules: {
                         // Let's make sure BOLA is the only thing activated 
                         throughputRule: {active: false}, 
-                        learnToAdaptRule: {active: false}, 
+                        l2ARule: {active: false},  
+
+
+                        //Activate BOLA Rule
                         bolaRule: {active: true}, 
 
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
