@@ -567,10 +567,10 @@ app.controller("DashController", [
                 abr: { 
                     useDefaultABRRules: true, 
                     rules: {
-                        // Let's make sure BOLA is the only thing activated 
-                        throughputRule: {active: false}, 
+                        // Let's make sure Throughput is the only thing activated 
+                        throughputRule: {active: true}, 
                         learnToAdaptRule: {active: false}, 
-                        bolaRule: {active: true}, 
+                        bolaRule: {active: false}, 
 
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
