@@ -559,7 +559,6 @@ app.controller("DashController", [
         $scope.player.updateSettings({
             streaming: { 
                 abr: { 
-                    useDefaultABRRules: true, 
                     rules: {
                         // Let's make sure BOLA is the only thing activated 
                         throughputRule: {active: false}, 
