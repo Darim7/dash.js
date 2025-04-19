@@ -566,10 +566,12 @@ app.controller("DashController", [
             streaming: { 
                 abr: { 
                     rules: {
-                        // Let's make sure Throughput is the only thing activated 
-                        throughputRule: {active: true}, 
-                        learnToAdaptRule: {active: false}, 
+                        // Let's make sure Throughput is the only thing activated  
+                        l2ARule: {active: false}, 
                         bolaRule: {active: false}, 
+
+                        //Activate Throughput
+                        throughputRule: {active: true}, 
 
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
