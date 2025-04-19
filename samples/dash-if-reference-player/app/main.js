@@ -562,12 +562,11 @@ app.controller("DashController", [
                     rules: {
                         // Let's make sure all default rules are deactivated
                         throughputRule: {active: false}, 
-                        learnToAdaptRule: {active: false}, 
                         bolaRule: {active: false}, 
 
                         //Now let's enable L2A 
                         l2ARule: {active: true}, 
-                        
+
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
                         abandonRequestsRule: {active: true}, 
