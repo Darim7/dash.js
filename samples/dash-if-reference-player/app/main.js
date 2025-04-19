@@ -548,7 +548,33 @@ app.controller("DashController", [
 
         $scope.video = document.querySelector(".dash-video-player video");
         // store a ref in window.player to provide an easy way to play with dash.js API
-        window.player = $scope.player = dashjs.MediaPlayer().create();
+        window.player = $scope.player = dashjs.MediaPlayer().create(); 
+
+        //////////////////////////////////////////
+        // 
+        // UPDATING PLAYERS SETTINGS HERE - MC
+        //  
+        //////////////////////////////////////////
+
+        $scope.player.updateSettings({
+            streaming: { 
+                abr: { 
+                    useDefaultABRRules: true, 
+                    rules: {
+                        // Let's make sure BOLA is the only thing activated 
+                        throughputRule: {active: false}, 
+                        learnToAdaptRule: {active: false}, 
+                        bolaRule: {active: true}, 
+
+                        //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
+                        // -> These are used in production to provide better QOE, so keep on by default when possible 
+                        abandonRequestsRule: {active: true}, 
+                        switchHistoryRule: {active: true}, 
+                        insufficientBufferRule: {active: true}
+                    }
+                }
+            } 
+        }) 
 
         const defaultSettings = JSON.parse(
             JSON.stringify($scope.player.getSettings())
@@ -622,7 +648,8 @@ app.controller("DashController", [
             $scope
         );
 
-        $scope.player.initialize($scope.video, null, $scope.autoPlaySelected);
+        $scope.player.initialize($scope.video, null, $scope.autoPlaySelected);  
+
         $scope.player.attachTTMLRenderingDiv($("#video-caption")[0]);
 
         var currentConfig = $scope.player.getSettings();
