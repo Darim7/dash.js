@@ -329,6 +329,12 @@ app.controller("DashController", [
                     color: "#65080c",
                     label: "Playback Rate",
                 },
+                stallRate: {
+                    data: [],
+                    selected: false,
+                    color: "#123456", // Choose a unique color
+                    label: "New Metric Label",
+                },
             },
         };
 
