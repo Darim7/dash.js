@@ -49,12 +49,19 @@
                     var bufferLevel = dashMetrics.getCurrentBufferLevel('video');
                     var bitrate = repSwitch ? Math.round(dashAdapter.getBandwidthForRepresentation(repSwitch.to, periodIdx) / 1000) : NaN;
                     var currentRep = player.getCurrentRepresentationForType('video');
+                    var droppedFrames = dashMetrics.getCurrentDroppedFrames('video');
                     var frameRate = currentRep.frameRate;
                     var resolution = currentRep.width + 'x' + currentRep.height;
                     document.getElementById('bufferLevel').innerText = bufferLevel + " secs";
                     document.getElementById('framerate').innerText = frameRate + " fps";
                     document.getElementById('reportedBitrate').innerText = bitrate + " Kbps";
                     document.getElementById('resolution').innerText = resolution;
+                    if (droppedFrames) {
+                        document.getElementById('DroppedFrames').innerText = droppedFrames.droppedFrames + " frames";
+                    }
+                    // console.log("dashMetrics", dashMetrics);
+                    // console.log("Dropped Frames", droppedFrames);
+                    // console.log("currentRep", currentRep);
                 }
             }, 1000);
 
@@ -117,6 +124,12 @@
                         </br>
                         <strong>Resolution:</strong>
                         <span id="resolution"></span>
+                        </br/>
+                        <strong>DroppedFrames:</strong>
+                        <span id="DroppedFrames"></span>
+                        <br/>
+                        <strong>Stall Rate:</strong>
+                        <span id="stallRate"></span>
                     </div>
                 </div>
             </div>
