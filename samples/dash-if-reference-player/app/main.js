@@ -555,6 +555,7 @@ app.controller("DashController", [
         // UPDATING PLAYERS SETTINGS HERE - MC
         //  
         //////////////////////////////////////////
+        player.addABRCustomRule('qualitySwitchRules', 'RBRule', window.RBRule);
 
         $scope.player.updateSettings({
             streaming: { 
@@ -563,9 +564,10 @@ app.controller("DashController", [
                         // Let's make sure Throughput is the only thing activated  
                         l2ARule: {active: false}, 
                         bolaRule: {active: false}, 
+                        throughputRule: {active: false}, 
 
-                        //Activate Throughput
-                        throughputRule: {active: true}, 
+                        //Activate RB Rule
+                        RBRule: {active: true}, 
 
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
