@@ -38,6 +38,21 @@
                 clearInterval(bitrateCalculator);
             });
 
+            let totalStallTime = 0; // Total time spent stalled
+            let stallStartTime = null; // Timestamp when stalling starts
+
+            // Add logic to monitor any stalls
+            player.on(dashjs.MediaPlayer.events["PLAYBACK_STALLED"], function () {
+                stallStartTime = performance.now(); // Record the time when stalling starts
+            });
+
+            player.on(dashjs.MediaPlayer.events["PLAYBACK_STARTED"], function () {
+                if (stallStartTime) {
+                    totalStallTime += (performance.now() - stallStartTime) / 1000; // Add stall duration in seconds
+                    stallStartTime = null; // Reset stall start time
+                }
+            });
+
             var eventPoller = setInterval(function () {
                 var streamInfo = player.getActiveStream().getStreamInfo();
                 var dashMetrics = player.getDashMetrics();
@@ -49,19 +64,24 @@
                     var bufferLevel = dashMetrics.getCurrentBufferLevel('video');
                     var bitrate = repSwitch ? Math.round(dashAdapter.getBandwidthForRepresentation(repSwitch.to, periodIdx) / 1000) : NaN;
                     var currentRep = player.getCurrentRepresentationForType('video');
-                    var droppedFrames = dashMetrics.getCurrentDroppedFrames('video');
                     var frameRate = currentRep.frameRate;
                     var resolution = currentRep.width + 'x' + currentRep.height;
+
+                    // Calculate dropped frames and stall rate
+                    var droppedFrames = dashMetrics.getCurrentDroppedFrames('video');
+                    let currentTimePlayed = player.time(); // Current playback time in seconds
+                    let stallRate = currentTimePlayed > 0 ? (((totalStallTime+currentTimePlayed)-currentTimePlayed) / currentTimePlayed) * 100 : 0;
+
                     document.getElementById('bufferLevel').innerText = bufferLevel + " secs";
                     document.getElementById('framerate').innerText = frameRate + " fps";
                     document.getElementById('reportedBitrate').innerText = bitrate + " Kbps";
                     document.getElementById('resolution').innerText = resolution;
+
+                    // Added dropped frames and stall rate
                     if (droppedFrames) {
                         document.getElementById('DroppedFrames').innerText = droppedFrames.droppedFrames + " frames";
                     }
-                    // console.log("dashMetrics", dashMetrics);
-                    // console.log("Dropped Frames", droppedFrames);
-                    // console.log("currentRep", currentRep);
+                    document.getElementById('stallRate').innerText = Math.round(stallRate) + " %";
                 }
             }, 1000);
 
