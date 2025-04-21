@@ -1,9 +1,11 @@
-FROM node:latest
+FROM node:23-slim
+
+WORKDIR /app
 
 COPY package.json package-lock.json ./
 
 RUN npm ci
 
-COPY . .
+# COPY . .
 
 CMD ["npm", "start"]

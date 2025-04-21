@@ -760,10 +760,12 @@ app.controller("DashController", [
             }
         );
 
-        $scope.player.on(dashjs.MediaPlayer.events.PLAYBACK_STARTED,
+        $scope.player.on(
+            dashjs.MediaPlayer.events.PLAYBACK_STARTED,
             function () {
                 if ($scope.stallStartTime) {
-                    $scope.totalStallTime += (performance.now() - $scope.stallStartTime) / 1000; // Add stall duration in seconds
+                    $scope.totalStallTime +=
+                        (performance.now() - $scope.stallStartTime) / 1000; // Add stall duration in seconds
                     $scope.stallStartTime = null; // Reset stall start time
                 }
             }
@@ -2825,7 +2827,8 @@ app.controller("DashController", [
 
             if ($scope.chartEnabled) {
                 var specificChart = $scope.chartState[type];
-                if (specificChart) {
+                // console.log($scope.chartState, type, name);
+                if (specificChart && name in specificChart) {
                     var data = specificChart[name].data;
                     data.push([time, value]);
                     if (data.length > $scope.maxPointsToChart) {
@@ -2938,8 +2941,14 @@ app.controller("DashController", [
                     );
                 }
                 let currentTimePlayed = $scope.player.time(); // Current playback time in seconds
-                let stallRate = currentTimePlayed > 0 ? ((($scope.totalStallTime+currentTimePlayed) - currentTimePlayed) / currentTimePlayed) * 100 : 0;
-
+                let stallRate =
+                    currentTimePlayed > 0
+                        ? (($scope.totalStallTime +
+                              currentTimePlayed -
+                              currentTimePlayed) /
+                              currentTimePlayed) *
+                          100
+                        : 0;
 
                 $scope[type + "BufferLength"] = bufferLevel;
                 $scope[type + "MaxIndex"] = maxIndex;
