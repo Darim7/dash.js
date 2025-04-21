@@ -11,13 +11,14 @@
     const FactoryMaker = dashjs.FactoryMaker;
     const SwitchRequestFactory = FactoryMaker.getClassFactoryByName('SwitchRequest');
     const Debug = FactoryMaker.getSingletonFactoryByName('Debug');
-    const MetricsConstants = FactoryMaker.getSingletonFactoryByName('MetricsConstants'); 
+    const MetricsConstants = FactoryMaker.getSingletonFactoryByName('MetricsConstants');   
+    const DashMetrics = FactoryMaker.getSingletonFactoryByName('DashMetrics');
+    // const MetricsModel = FactoryMaker.getgetSingletonFactoryByName('MetricsModel');
 
     function FestiveRuleClass(config){
         config = config || {};
         const context       = this.context;
-        const dashMetrics   = config.dashMetrics;
-        let instance, logger; 
+        let instance, logger, dashMetrics; 
         
         // Stability Window Size 
         const horizon = 5 
@@ -34,7 +35,8 @@
         let switchUpThreshold = []; 
 
         function setup() {
-            logger = Debug(context).getInstance().getLogger(instance);
+            logger = Debug(context).getInstance().getLogger(instance); 
+            dashMetrics = DashMetrics(context).getInstance();
         } 
 
         function getClassName(){
@@ -120,7 +122,7 @@
                     return switchRequest;
                 }
                 // buffer‐loaded check (unless live)
-                if (currentBufferState.state !== MetricsConstants.BUFFER_LOADED && !isDynamic) {
+                if (currentBufferState !== MetricsConstants.BUFFER_LOADED && !isDynamic) {
                     logger.debug('[FestiveRule] Buffer not loaded and not live - skipping ABR decision');
                     return switchRequest;
                 }

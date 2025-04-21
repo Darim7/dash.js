@@ -570,10 +570,7 @@ app.controller("DashController", [
                         // Let's make sure Throughput is the only thing activated  
                         l2ARule: {active: false}, 
                         bolaRule: {active: false}, 
-                        throughputRule: {active: false}, 
-
-                        //Activate RB Rule
-                        FestiveRule: {active: true}, 
+                        throughputRule: {active: false},  
 
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
@@ -582,7 +579,7 @@ app.controller("DashController", [
                         insufficientBufferRule: {active: true}
                     },  
                     // Had to adjust throughput to use Harmonic Mean Window with 20 Samples as per Festive Paper
-                    throuhput: { 
+                    throughput: { 
                         averageCalculationMode: dashjs.Constants.THROUGHPUT_CALCULATION_MODES.BYTE_SIZE_WEIGHTED_HARMONIC_MEAN, 
                         sampleSettings: {
                             vod: 20, 
