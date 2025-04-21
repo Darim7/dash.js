@@ -749,6 +749,26 @@ app.controller("DashController", [
             $scope
         );
 
+        $scope.totalStallTime = 0; // Total time spent stalled
+        $scope.stallStartTime = null; // Timestamp when stalling starts
+
+        // Add logic to monitor any stalls
+        $scope.player.on(
+            dashjs.MediaPlayer.events.PLAYBACK_STALLED,
+            function () {
+                $scope.stallStartTime = performance.now(); // Record the time when stalling starts
+            }
+        );
+
+        $scope.player.on(dashjs.MediaPlayer.events.PLAYBACK_STARTED,
+            function () {
+                if ($scope.stallStartTime) {
+                    $scope.totalStallTime += (performance.now() - $scope.stallStartTime) / 1000; // Add stall duration in seconds
+                    $scope.stallStartTime = null; // Reset stall start time
+                }
+            }
+        );
+
         $scope.player.on(
             dashjs.MediaPlayer.events.PLAYBACK_ENDED,
             function (e) {
@@ -2917,12 +2937,16 @@ app.controller("DashController", [
                         $scope.player.getPlaybackRate().toFixed(2)
                     );
                 }
+                let currentTimePlayed = $scope.player.time(); // Current playback time in seconds
+                let stallRate = currentTimePlayed > 0 ? ((($scope.totalStallTime+currentTimePlayed) - currentTimePlayed) / currentTimePlayed) * 100 : 0;
+
 
                 $scope[type + "BufferLength"] = bufferLevel;
                 $scope[type + "MaxIndex"] = maxIndex;
                 $scope[type + "DroppedFrames"] = droppedFPS;
                 $scope[type + "LiveLatency"] = liveLatency;
                 $scope[type + "PlaybackRate"] = playbackRate;
+                $scope[type + "StallRate"] = stallRate;
 
                 var httpMetrics = calculateHTTPMetrics(
                     type,
@@ -2961,6 +2985,7 @@ app.controller("DashController", [
                     $scope.plotPoint("droppedFPS", type, droppedFPS, time);
                     $scope.plotPoint("liveLatency", type, liveLatency, time);
                     $scope.plotPoint("playbackRate", type, playbackRate, time);
+                    $scope.plotPoint("stallRate", type, stallRate, time);
 
                     if (httpMetrics) {
                         $scope.plotPoint(
