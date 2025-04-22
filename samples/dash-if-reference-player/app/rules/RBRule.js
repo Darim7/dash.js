@@ -11,12 +11,12 @@
     var SwitchRequestFactory = FactoryMaker.getClassFactoryByName('SwitchRequest');
     var MetricsConstants  = FactoryMaker.getSingletonFactoryByName('MetricsConstants');
     var Debug             = FactoryMaker.getSingletonFactoryByName('Debug');
+    const DashMetrics = FactoryMaker.getSingletonFactoryByName('DashMetrics');
 
     function RBRuleClass(config) {
         config = config || {};
         const context       = this.context;
-        const dashMetrics   = config.dashMetrics;
-        let instance, logger;
+        let instance, logger, dashMetrics;
 
        
         // Internal Variables 
@@ -27,7 +27,8 @@
         let consecutiveHigh = 0;
 
         function setup() {
-            logger = Debug(context).getInstance().getLogger(instance);
+            logger = Debug(context).getInstance().getLogger(instance); 
+            dashMetrics = DashMetrics(context).getInstance(); 
         }
 
         function getClassName() {
@@ -68,12 +69,12 @@
                 Cancel it before it finishes
 
                 Switch to a lower quality instead  */
-                if (abrController.getAbandonmentStateFor(streamId, mediaType) !== MetricsConstants.ALLOW_LOAD) {
+                if (abrController.getAbandonmentStateFor(streamId, mediaType) !== dashjs.ALLOW_LOAD) {
                     logger.debug('[RBRule] Abandonment active - skipping ABR decision');
                     return switchRequest;
                 }
                 // buffer‐loaded check (unless live)
-                if (currentBufferState.state !== MetricsConstants.BUFFER_LOADED && !isDynamic) {
+                if (currentBufferState !== dashjs.BUFFER_LOADED && !isDynamic) {
                     logger.debug('[RBRule] Buffer not loaded and not live - skipping ABR decision');
                     return switchRequest;
                 }

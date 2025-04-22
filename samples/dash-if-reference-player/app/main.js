@@ -572,9 +572,6 @@ app.controller("DashController", [
                         bolaRule: {active: false}, 
                         throughputRule: {active: false}, 
 
-                        //Activate RB Rule
-                        RBRule: {active: true}, 
-
                         //Now let's make sure we keep the "safeguard" rules in place that come on by default in dash.js are on + 
                         // -> These are used in production to provide better QOE, so keep on by default when possible 
                         abandonRequestsRule: {active: true}, 
