@@ -1,150 +1,144 @@
-(function() {
-    'use strict'; 
+/**
+ * Custom Rate‑Based ABR Rule for dash.js v5
+ * (unwrapped from an IIFE, global var style)
+ */
 
-    // Immediately Invoked Function Expression !  
+var RBRule;  // ← global var, like LowestBitrateRuleTest
 
-    //Writing simple modified Rate Based algorithm for the sake of testing 
-    //Will be very similar to Throughput with some minor tweaks 
+function RBRuleClass(config) {
+    config = config || {};
 
-    // Grab the built‑in dash.js factories/constants from the global dash.js import that's called prior
-    var FactoryMaker      = dashjs.FactoryMaker;
-    var SwitchRequestFactory = FactoryMaker.getClassFactoryByName('SwitchRequest');
-    var MetricsConstants  = FactoryMaker.getSingletonFactoryByName('MetricsConstants');
-    var Debug             = FactoryMaker.getSingletonFactoryByName('Debug');
-    const DashMetrics = FactoryMaker.getSingletonFactoryByName('DashMetrics');
+    // grab factories/singletons
+    var factory               = dashjs.FactoryMaker;
+    var SwitchRequest         = factory.getClassFactoryByName('SwitchRequest');
+    var Debug                 = factory.getSingletonFactoryByName('Debug');
+    var DashMetrics           = factory.getSingletonFactoryByName('DashMetrics');
+    var MetricsConstants = dashjs.MetricsConstants;
+    var context               = this.context;
+    var logger, dashMetrics;
+    var lastQuality     = NaN;
+    var consecutiveHigh = 0;
+    var instance;
 
-    function RBRuleClass(config) {
-        config = config || {};
-        const context       = this.context;
-        let instance, logger, dashMetrics;
-
-       
-        // Internal Variables 
-        // LastQuality will help us decide whether we increase the quality based off of what was given last 
-        // consecutiveHigh will let us make sure that the bitrate is sustainable before switching  
-        // (Has to be the same or around the same bitrate) consecutively
-        let lastQuality     = NaN;
-        let consecutiveHigh = 0;
-
-        function setup() {
-            logger = Debug(context).getInstance().getLogger(instance); 
-            dashMetrics = DashMetrics(context).getInstance(); 
-        }
-
-        function getClassName() {
-            return 'RBRule';
-        }
-
-        function getSwitchRequest(rulesContext) {
-            try {
-                const switchRequest       = SwitchRequestFactory(context).create();
-                switchRequest.rule      = getClassName();
-
-                // pull in all the controllers and state
-                const mediaType           = rulesContext.getMediaType();
-                const abrController       = rulesContext.getAbrController();
-                const throughputController= rulesContext.getThroughputController();
-                const scheduleController  = rulesContext.getScheduleController();
-                const streamInfo          = rulesContext.getStreamInfo() || {};
-                const streamId            = streamInfo.id;
-                const isDynamic           = streamInfo.manifestInfo && streamInfo.manifestInfo.isDynamic;
-                const currentBufferState  = dashMetrics.getCurrentBufferState(mediaType);
-                const bufferLevel         = dashMetrics.getCurrentBufferLevel(mediaType);
-                const throughput          = throughputController.getSafeAverageThroughput(mediaType);
-                const latency             = throughputController.getAverageLatency(mediaType);
-
-                // Exit if no throughput or buffer info
-                if (isNaN(throughput) || !currentBufferState) {
-                    return switchRequest;
-                } 
-                
-                /* 
-                Note: 
-                abrController.getAbandonmentStateFor(streamId, mediaType) checks whether the player has recently aborted a fragment download because it was too slow.
-
-                Dash.js uses abandonment logic to:
-
-                Detect when a high-quality fragment is taking too long
-
-                Cancel it before it finishes
-
-                Switch to a lower quality instead  */
-                if (abrController.getAbandonmentStateFor(streamId, mediaType) !== dashjs.ALLOW_LOAD) {
-                    logger.debug('[RBRule] Abandonment active - skipping ABR decision');
-                    return switchRequest;
-                }
-                // buffer‐loaded check (unless live)
-                if (currentBufferState !== dashjs.BUFFER_LOADED && !isDynamic) {
-                    logger.debug('[RBRule] Buffer not loaded and not live - skipping ABR decision');
-                    return switchRequest;
-                }
-
-                // get available representations & their bitrates (kbps)
-                const reps     = abrController.getPossibleVoRepresentationsFilteredBySettings(rulesContext.getMediaInfo(), true);
-                const bitrates = reps.map(r => r.bandwidth / 1000); //kbps 
-                const usable_TP   = throughput; // you could multiply by a safety margin here
-
-                // pick the highest index that fits
-                let candidate = 0  
-                for (let i = bitrates.length - 1; i >= 0; i--){
-                    if(usable_TP >= bitrates[i]){
-                        candidate = i 
-                        break; 
-                    }
-                }  
-
-                //We only switch with consistent/sustainable bitrate
-                if(!isNaN(lastQuality) && candidate > lastQuality){
-                    if(consecutiveHigh >= 2 && bufferLevel > 5){
-                        logger.debug(`[RBRule] Upshifting to ${candidate}`) 
-                    }else{ 
-                        //We want to keep the quality to what it was
-                        candidate = lastQuality;  
-                        logger.debug('[RBRule] Preventing upshift due to insufficient stability');
-                    }
-                }  
-
-                //This tells us it's sustainable
-                if (!isNaN(lastQuality) && usable_TP >= bitrates[lastQuality]){
-                    consecutiveHigh++; 
-                }else{ 
-                    consecutiveHigh = 0
-                } 
-                lastQuality = candidate;
-
-                // build the SwitchRequest
-                switchRequest.representation = reps[candidate] 
-                switchRequest.reason = {
-                    throughput,
-                    latency,
-                    message:`[RBRule]: Switching to Representation with bitrate ${switchRequest.representation ? switchRequest.representation.bitrateInKbit : 'n/a'} kbit/s. Throughput: ${throughput}`
-                };
-
-                // Schedule Controller
-                scheduleController.setTimeToLoadDelay(0);
-                return switchRequest;
-            } catch (e) {
-                logger.error(e);
-                return SwitchRequestFactory(context).create();
-            }
-        }
-
-        function reset() {
-            lastQuality     = NaN;
-            consecutiveHigh = 0;
-        }
-
-        instance = {
-            getSwitchRequest, 
-            reset, 
-            getClassName
-        } 
-
-        setup();
-        return instance;
+    function setup() {
+        logger     = Debug(context).getInstance().getLogger(instance);
+        dashMetrics = DashMetrics(context).getInstance();  
     }
 
-    // register under the global dashjs FactoryMaker
-    RBRuleClass.__dashjs_factory_name = 'RBRule';
-    window.RBRule = dashjs.FactoryMaker.getClassFactory(RBRuleClass);
-})();
+    function getSwitchRequest(rulesContext) {
+        try { 
+            // console.log("[RB RULE] SWITCH REQUEST")
+            // create a fresh request
+            var switchRequest = SwitchRequest(context).create();
+            switchRequest.rule = 'RBRule';
+
+            // pull in controllers & state
+            var mediaType            = rulesContext.getMediaType();
+            var abrController        = rulesContext.getAbrController();
+            var throughputController = rulesContext.getThroughputController();
+            var scheduleController   = rulesContext.getScheduleController();
+            var streamInfo           = rulesContext.getStreamInfo() || {};
+            var streamId             = streamInfo.id;
+            var isDynamic            = streamInfo.manifestInfo && streamInfo.manifestInfo.isDynamic;
+            var bufState             = dashMetrics.getCurrentBufferState(mediaType);
+            var bufferLevel          = dashMetrics.getCurrentBufferLevel(mediaType);
+            var throughput           = throughputController.getSafeAverageThroughput(mediaType);
+            var latency              = throughputController.getAverageLatency(mediaType);
+            // console.log("[RB RULE] PAST? REQUEST") 
+            // console.log(throughput) 
+            if (isNaN(throughput)) {
+                // not enough data yet skip ABR logic
+                return switchRequest;
+            }
+            // console.log(bufState)
+            // bail‑out conditions
+            if (!bufState) { 
+                // console.log("[RBRule] RETURNED EARLY")
+                return switchRequest;
+            } 
+            console.log(bufState)
+            if (abrController.getAbandonmentStateFor(streamId, mediaType) !== 'allowload') {
+                logger.debug('[RBRule] Abandonment active – skipping ABR'); 
+                // console.log("[RB RULE] ABANDON REQUEST")
+                return switchRequest;
+            }
+            if (bufState.state !== 'bufferLoaded' && !isDynamic) {
+                logger.debug('[RBRule] Buffer not loaded & not live – skipping ABR'); 
+                // console.log("[RB RULE] BUFFER LOADED???")
+                return switchRequest;
+            } 
+            // console.log("[RB RULE] Past Basic Checks")
+
+            // fetch available representations correctly in v5
+            var reps      = abrController.getPossibleVoRepresentations(
+                               rulesContext.getMediaInfo(), true
+                            );
+            var bitrates  = reps.map(r => r.bandwidth/1000);  // in kbps
+            var candidate = 0;  
+            // console.log(reps)
+            // console.log(bitrates)
+            // console.log("Throughput:") 
+            // console.log(throughput)
+            // pick the highest index ≤ measured throughput
+            for (var i = bitrates.length - 1; i >= 0; i--) {
+                if (throughput >= bitrates[i]) {
+                    candidate = i;
+                    break;
+                }
+            }
+            // console.log("[RB RULE] DID MATH") 
+            // console.log(bufferLevel) 
+            // console.log(candidate) 
+            // console.log(lastQuality)
+
+            // only allow up‑shift if stable
+            if (!isNaN(lastQuality) && candidate > lastQuality) {
+                if (consecutiveHigh >= 2 && bufferLevel > 5) {
+                    logger.debug('[RBRule] Upshifting to', candidate);
+                } else {
+                    candidate = lastQuality;
+                    logger.debug('[RBRule] Preventing up‑shift; stability insufficient');
+                }
+            } 
+
+            // track sustainability
+            if (!isNaN(lastQuality) && throughput >= bitrates[lastQuality]) {
+                consecutiveHigh++;
+            } else {
+                consecutiveHigh = 0;
+            }
+            lastQuality = candidate;
+
+            // build & return the decision
+            switchRequest.representation = reps[candidate];
+            switchRequest.priority       = SwitchRequest.PRIORITY.STRONG;
+            switchRequest.reason         = {
+                throughput,
+                latency,
+                message: `[RBRule] Switching to bitrate ${reps[candidate].bitrateInKbit} kbit/s`
+            };
+            return switchRequest;
+
+        } catch (e) {
+            logger.error(e);
+            return SwitchRequest(context).create();
+        }
+    }
+
+    function reset() {
+        lastQuality     = NaN;
+        consecutiveHigh = 0;
+    }
+
+    instance = {
+        getSwitchRequest: getSwitchRequest,
+        reset:            reset
+    };
+
+    setup();
+    return instance;
+}
+
+// must match the string you’ll pass into addABRCustomRule()
+RBRuleClass.__dashjs_factory_name = 'RBRule';
+RBRule = dashjs.FactoryMaker.getClassFactory(RBRuleClass);
