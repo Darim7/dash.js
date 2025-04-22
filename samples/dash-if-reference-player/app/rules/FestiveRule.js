@@ -11,7 +11,8 @@
     const FactoryMaker = dashjs.FactoryMaker;
     const SwitchRequestFactory = FactoryMaker.getClassFactoryByName('SwitchRequest');
     const Debug = FactoryMaker.getSingletonFactoryByName('Debug');
-    const MetricsConstants = FactoryMaker.getSingletonFactoryByName('MetricsConstants');   
+    // const MetricsConstantsFactory = FactoryMaker.getSingletonFactoryByName('MetricsConstants');    
+    const MetricsConstants = dashjs.MetricsConstants 
     const DashMetrics = FactoryMaker.getSingletonFactoryByName('DashMetrics');
     // const MetricsModel = FactoryMaker.getgetSingletonFactoryByName('MetricsModel');
 
@@ -36,7 +37,7 @@
 
         function setup() {
             logger = Debug(context).getInstance().getLogger(instance); 
-            dashMetrics = DashMetrics(context).getInstance();
+            dashMetrics = DashMetrics(context).getInstance(); 
         } 
 
         function getClassName(){
@@ -84,7 +85,7 @@
         } 
         // SwitchRequestFunction required by Dash.js 
         function getSwitchRequest(rulesContext) {
-            try{
+            try{ 
                 const switchRequest = SwitchRequestFactory(context).create(); 
                 switchRequest.rule = getClassName() 
 
@@ -117,16 +118,15 @@
                 Cancel it before it finishes
 
                 Switch to a lower quality instead  */
-                if (abrController.getAbandonmentStateFor(streamId, mediaType) !== MetricsConstants.ALLOW_LOAD) {
+                if (abrController.getAbandonmentStateFor(streamId, mediaType) !== dashjs.ALLOW_LOAD) {
                     logger.debug('[FestiveRule] Abandonment active - skipping ABR decision');
                     return switchRequest;
                 }
                 // buffer‐loaded check (unless live)
-                if (currentBufferState !== MetricsConstants.BUFFER_LOADED && !isDynamic) {
+                if (currentBufferState !== dashjs.BUFFER_LOADED && !isDynamic) {
                     logger.debug('[FestiveRule] Buffer not loaded and not live - skipping ABR decision');
                     return switchRequest;
                 }
-
                 // Initialize bitrate array and thresholds once
                 if (!bitrateArray) {
                     const reps = abrController.getPossibleVoRepresentationsFilteredBySettings(
