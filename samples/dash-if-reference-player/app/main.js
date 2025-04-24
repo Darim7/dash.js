@@ -424,7 +424,7 @@ app.controller("DashController", [
             mpd: encodeURIComponent(
                 "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
             ),
-            loop: true,
+            loop: false,
             autoPlay: true,
             autoLoad: false,
             muted: false,
