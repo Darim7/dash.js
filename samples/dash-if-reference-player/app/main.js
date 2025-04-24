@@ -486,7 +486,7 @@ app.controller("DashController", [
         $scope.cmsdEnabled = false;
         $scope.cmsdApplyMb = false;
         $scope.cmsdEtpWeightRatio = 0;
-        $scope.loopSelected = true;
+        $scope.loopSelected = false;
         $scope.scheduleWhilePausedSelected = true;
         $scope.calcSegmentAvailabilityRangeFromTimelineSelected = false;
         $scope.reuseExistingSourceBuffersSelected = true;
