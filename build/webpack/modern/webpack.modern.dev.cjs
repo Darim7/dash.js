@@ -16,6 +16,7 @@ const umdDevConfig = merge(umdConfig, {
         open: ['samples/index.html'],
         hot: true,
         compress: true,
+        allowedHosts: "all",
         port: 3000
     }
 });
