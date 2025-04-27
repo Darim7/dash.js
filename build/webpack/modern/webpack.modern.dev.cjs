@@ -14,10 +14,17 @@ const umdDevConfig = merge(umdConfig, {
             directory: path.join(__dirname, '../../../'),
         },
         open: ['samples/index.html'],
-        hot: true,
+        hot: false,
         compress: true,
+        allowedHosts: "all",
         port: 3000
-    }
+    },
+    watch: false,
+    watchOptions: {
+        ignored: /node_modules/,
+        aggregateTimeout: 300,
+        poll: 1000,
+    },
 });
 
 module.exports = [umdDevConfig];
