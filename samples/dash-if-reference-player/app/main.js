@@ -486,7 +486,7 @@ app.controller("DashController", [
         $scope.cmsdEnabled = false;
         $scope.cmsdApplyMb = false;
         $scope.cmsdEtpWeightRatio = 0;
-        $scope.loopSelected = true;
+        $scope.loopSelected = false;
         $scope.scheduleWhilePausedSelected = true;
         $scope.calcSegmentAvailabilityRangeFromTimelineSelected = false;
         $scope.reuseExistingSourceBuffersSelected = true;
@@ -780,25 +780,22 @@ app.controller("DashController", [
 
         $scope.totalStallTime = 0; // Total time spent stalled
         $scope.stallStartTime = null; // Timestamp when stalling starts
+        $scope.stallCount = 0; // Count of stalls
 
         // Add logic to monitor any stalls
-        $scope.player.on(
-            dashjs.MediaPlayer.events.PLAYBACK_STALLED,
-            function () {
-                $scope.stallStartTime = performance.now(); // Record the time when stalling starts
-            }
-        );
+        $scope.player.on(dashjs.MediaPlayer.events.BUFFER_EMPTY, function () {
+            console.log("[ALERT] Playback stalled");
+            $scope.stallStartTime = performance.now(); // Record the time when stalling starts
+            $scope.stallCount++; // Increment stall count
+        });
 
-        $scope.player.on(
-            dashjs.MediaPlayer.events.PLAYBACK_STARTED,
-            function () {
-                if ($scope.stallStartTime) {
-                    $scope.totalStallTime +=
-                        (performance.now() - $scope.stallStartTime) / 1000; // Add stall duration in seconds
-                    $scope.stallStartTime = null; // Reset stall start time
-                }
+        $scope.player.on(dashjs.MediaPlayer.events.BUFFER_LOADED, function () {
+            if ($scope.stallStartTime) {
+                $scope.totalStallTime +=
+                    (performance.now() - $scope.stallStartTime) / 1000; // Add stall duration in seconds
+                $scope.stallStartTime = null; // Reset stall start time
             }
-        );
+        });
 
         $scope.player.on(
             dashjs.MediaPlayer.events.PLAYBACK_ENDED,
@@ -2842,7 +2839,7 @@ app.controller("DashController", [
         const socket = new WebSocket("ws://localhost:6789");
 
         $scope.plotPoint = function (name, type, value, time) {
-            if (type === "video") {
+            if (type === "video" && socket.readyState === WebSocket.OPEN) {
                 // Send Data to Server
                 const dataPoint = JSON.stringify({
                     testName: document.title,
@@ -2985,6 +2982,7 @@ app.controller("DashController", [
                 $scope[type + "LiveLatency"] = liveLatency;
                 $scope[type + "PlaybackRate"] = playbackRate;
                 $scope[type + "StallRate"] = stallRate;
+                $scope[type + "StallCount"] = $scope.stallCount;
 
                 var httpMetrics = calculateHTTPMetrics(
                     type,
@@ -3024,6 +3022,12 @@ app.controller("DashController", [
                     $scope.plotPoint("liveLatency", type, liveLatency, time);
                     $scope.plotPoint("playbackRate", type, playbackRate, time);
                     $scope.plotPoint("stallRate", type, stallRate, time);
+                    $scope.plotPoint(
+                        "stallCount",
+                        type,
+                        $scope.stallCount,
+                        time
+                    );
 
                     if (httpMetrics) {
                         $scope.plotPoint(
