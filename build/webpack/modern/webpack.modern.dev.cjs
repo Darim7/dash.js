@@ -21,7 +21,9 @@ const umdDevConfig = merge(umdConfig, {
     },
     watch: false,
     watchOptions: {
-        ignored: /node_modules/
+        ignored: /node_modules/,
+        aggregateTimeout: 300,
+        poll: 1000,
     },
 });
 
