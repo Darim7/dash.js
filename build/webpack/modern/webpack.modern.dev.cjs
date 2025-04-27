@@ -14,7 +14,7 @@ const umdDevConfig = merge(umdConfig, {
             directory: path.join(__dirname, '../../../'),
         },
         open: ['samples/index.html'],
-        hot: true,
+        hot: false,
         compress: true,
         allowedHosts: "all",
         port: 3000
