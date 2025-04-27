@@ -778,18 +778,20 @@ app.controller("DashController", [
 
         $scope.totalStallTime = 0; // Total time spent stalled
         $scope.stallStartTime = null; // Timestamp when stalling starts
+        $scope.stallCount = 0; // Count of stalls
 
         // Add logic to monitor any stalls
         $scope.player.on(
-            dashjs.MediaPlayer.events.PLAYBACK_STALLED,
+            dashjs.MediaPlayer.events.BUFFER_EMPTY,
             function () {
                 console.log("[ALERT] Playback stalled");
                 $scope.stallStartTime = performance.now(); // Record the time when stalling starts
+                $scope.stallCount++; // Increment stall count
             }
         );
 
         $scope.player.on(
-            dashjs.MediaPlayer.events.PLAYBACK_STARTED,
+            dashjs.MediaPlayer.events.BUFFER_LOADED,
             function () {
                 if ($scope.stallStartTime) {
                     $scope.totalStallTime +=
@@ -2984,6 +2986,7 @@ app.controller("DashController", [
                 $scope[type + "LiveLatency"] = liveLatency;
                 $scope[type + "PlaybackRate"] = playbackRate;
                 $scope[type + "StallRate"] = stallRate;
+                $scope[type + "StallCount"] = $scope.stallCount;
 
                 var httpMetrics = calculateHTTPMetrics(
                     type,
@@ -3023,6 +3026,7 @@ app.controller("DashController", [
                     $scope.plotPoint("liveLatency", type, liveLatency, time);
                     $scope.plotPoint("playbackRate", type, playbackRate, time);
                     $scope.plotPoint("stallRate", type, stallRate, time);
+                    $scope.plotPoint("stallCount", type, $scope.stallCount, time);
 
                     if (httpMetrics) {
                         $scope.plotPoint(
