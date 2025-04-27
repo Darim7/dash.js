@@ -785,6 +785,7 @@ app.controller("DashController", [
         $scope.player.on(
             dashjs.MediaPlayer.events.PLAYBACK_STALLED,
             function () {
+                console.log("[ALERT] Playback stalled");
                 $scope.stallStartTime = performance.now(); // Record the time when stalling starts
             }
         );
