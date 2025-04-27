@@ -18,7 +18,11 @@ const umdDevConfig = merge(umdConfig, {
         compress: true,
         allowedHosts: "all",
         port: 3000
-    }
+    },
+    watch: false,
+    watchOptions: {
+        ignored: /node_modules/
+    },
 });
 
 module.exports = [umdDevConfig];
