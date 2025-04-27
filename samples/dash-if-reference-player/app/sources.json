@@ -97,6 +97,41 @@
     },
     "items": [
         {
+            "name": "Test",
+            "submenu": [
+                {
+                    "url": "https://int.dhinak.net:1443/media/TheEmptinessMachine.mp4_output.mpd",
+                    "name": "The Emptiness Machine - HTTP/1.1",
+                    "provider": "dashif"
+                },
+                {
+                    "url": "https://int.dhinak.net:2443/media/TheEmptinessMachine.mp4_output.mpd",
+                    "name": "The Emptiness Machine - HTTP/2",
+                    "provider": "dashif"
+                },
+                {
+                    "url": "https://int.dhinak.net:8443/media/TheEmptinessMachine.mp4_output.mpd",
+                    "name": "The Emptiness Machine - HTTP/3",
+                    "provider": "dashif"
+                },
+                {
+                    "url": "https://int.dhinak.net:1443/media/CaptainAmerica.mp4_output.mpd",
+                    "name": "Captain America - HTTP/1.1",
+                    "provider": "dashif"
+                },
+                {
+                    "url": "https://int.dhinak.net:2443/media/CaptainAmerica.mp4_output.mpd",
+                    "name": "Captain America - HTTP/2",
+                    "provider": "dashif"
+                },
+                {
+                    "url": "https://int.dhinak.net:8443/media/CaptainAmerica.mp4_output.mpd",
+                    "name": "Captain America - HTTP/3",
+                    "provider": "dashif"
+                }
+            ]
+        },
+        {
             "name": "VOD (Static MPD)",
             "submenu": [
                 {
