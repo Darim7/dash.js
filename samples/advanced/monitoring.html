@@ -42,11 +42,11 @@
             let stallStartTime = null; // Timestamp when stalling starts
 
             // Add logic to monitor any stalls
-            player.on(dashjs.MediaPlayer.events["PLAYBACK_STALLED"], function () {
+            player.on(dashjs.MediaPlayer.events["BUFFER_EMPTY"], function () {
                 stallStartTime = performance.now(); // Record the time when stalling starts
             });
 
-            player.on(dashjs.MediaPlayer.events["PLAYBACK_STARTED"], function () {
+            player.on(dashjs.MediaPlayer.events["BUFFER_LOADED"], function () {
                 if (stallStartTime) {
                     totalStallTime += (performance.now() - stallStartTime) / 1000; // Add stall duration in seconds
                     stallStartTime = null; // Reset stall start time
@@ -70,7 +70,7 @@
                     // Calculate dropped frames and stall rate
                     var droppedFrames = dashMetrics.getCurrentDroppedFrames('video');
                     let currentTimePlayed = player.time(); // Current playback time in seconds
-                    let stallRate = currentTimePlayed > 0 ? (((totalStallTime+currentTimePlayed)-currentTimePlayed) / currentTimePlayed) * 100 : 0;
+                    let stallRate = currentTimePlayed > 0 ? ((totalStallTime) / currentTimePlayed) * 100 : 0;
 
                     document.getElementById('bufferLevel').innerText = bufferLevel + " secs";
                     document.getElementById('framerate').innerText = frameRate + " fps";
