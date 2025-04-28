@@ -851,13 +851,13 @@ function PlaybackController() {
         eventBus.trigger(Events.PLAYBACK_LOADED_DATA);
     }
 
-    const socket = new WebSocket("ws://localhost:6789");
+    // const socket = new WebSocket("ws://localhost:6789");
 
     // Event to handle the native video element ended event
     function _onNativePlaybackEnded() {
         logger.info("Native video element event: ended");
-        socket.send("close");
-        socket.close();
+        // socket.send("close");
+        // socket.close();
         pause();
         stopUpdatingWallclockTime();
         const streamInfo = streamController
