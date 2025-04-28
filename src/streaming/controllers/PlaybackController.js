@@ -856,6 +856,7 @@ function PlaybackController() {
     // Event to handle the native video element ended event
     function _onNativePlaybackEnded() {
         logger.info("Native video element event: ended");
+        socket.send("close");
         socket.close();
         pause();
         stopUpdatingWallclockTime();
